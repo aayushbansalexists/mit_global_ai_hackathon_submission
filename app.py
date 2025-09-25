@@ -12,25 +12,19 @@ import base64
 from dotenv import load_dotenv
 from streamlit.components.v1 import html
 
-# --- NEW: Import Google GenAI SDK ---
 from google import genai
 
-# --- Load environment variables ---
 load_dotenv()
 
-# --- API Key Handling ---
 def get_api_key():
     if 'user_api_key' in st.session_state and st.session_state['user_api_key']:
         return st.session_state['user_api_key']
     return os.environ.get("GOOGLE_API_KEY", "")
 
-# --- AI Chat Function ---
 def ai_chat(messages, model="gemini-2.0-flash", api_key=None):
     if api_key is None:
         api_key = get_api_key()
     client = genai.Client(api_key=api_key)
-    # Gemini expects a single string or a list of strings as context
-    # We'll concatenate the messages in order
     prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
     response = client.models.generate_content(
         model=model,
@@ -38,7 +32,6 @@ def ai_chat(messages, model="gemini-2.0-flash", api_key=None):
     )
     return response.text
 
-# --- DocumentChunk and Vector Store ---
 class DocumentChunk:
     def __init__(self, text, source, page_number):
         self.text = text
@@ -103,7 +96,6 @@ def extract_field_with_pattern(text, patterns):
             return matches.group(1).strip()
     return None
 
-# --- UPDATED: Use ai_chat instead of Ollama ---
 def extract_field_with_ai(field, chunks, max_chunks=5):
     if not chunks:
         return None, 0.0, None, None
